@@ -28,8 +28,20 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
+    lit = re.compile(r"GET (/[\S]*/puzzle/[\S]*)")
+    url_list = []
+    with open(filename, 'r') as f:
+        for l in f:
+            get_string = re.search(lit, l)
+            if get_string:
+                g_string = get_string.group(1)
+                url_string = filename + g_string
+                if url_string not in url_list:
+                    url_list.append(url_string)
+        f.close()
+    url_list = sorted(url_list)
+    return url_list
+
 
 
 def download_images(img_urls, dest_dir):
@@ -40,9 +52,22 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
-
+    if os.path.isdir(dest_dir):
+        os.chdir(dest_dir)
+    else:
+        os.makedirs(dest_dir)
+        os.chdir(dest_dir)
+    i = 0
+    for url in img_urls:
+        urllib.urlretrieve(url, "img" + str(i))
+        i += 1
+    with open("index.html", "w+") as w:
+        w.write("<html>\n<body>\n")
+        x = 0
+        for i in img_urls:
+            w.write("<img src={}".format(dest_dir
+                + "/" + "img" + str(x) + ">"))
+        w.write("</body>\n</html>")
 
 def create_parser():
     """Create an argument parser object"""
@@ -51,7 +76,6 @@ def create_parser():
     parser.add_argument('logfile', help='apache logfile to extract urls from')
 
     return parser
-
 
 def main(args):
     """Parse args, scan for urls, get images from urls"""
@@ -73,3 +97,6 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
+
+read_urls('animal_code.google.com')
