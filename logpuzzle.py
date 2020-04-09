@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Logpuzzle exercise
 
@@ -19,7 +19,7 @@ Here's what a puzzle url looks like:
 import os
 import re
 import sys
-import urllib
+import urllib.request as urllib
 import argparse
 
 
@@ -28,8 +28,20 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
+    lit = re.compile(r"GET (/[\S]*/puzzle/[\S]*)")
+    url_list = []
+    with open(filename, 'r') as f:
+        for l in f:
+            get_string = re.search(lit, l)
+            if get_string:
+                g_string = get_string.group(1)
+                f_name = filename[filename.index('_') + 1:]
+                url_string = f_name + g_string
+                if url_string not in url_list:
+                    url_list.append(url_string)
+    url_list = sorted(url_list, key=lambda u: u[-8:])
+    return url_list
+
 
 
 def download_images(img_urls, dest_dir):
@@ -40,9 +52,18 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
-
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    for i, url in enumerate(img_urls):
+        url = "http://" + url
+        print(url)
+        dest = os.path.join(dest_dir, "img" + str(i) + ".jpg")
+        urllib.urlretrieve(url, dest)
+    with open(os.path.join(dest_dir, "index.html"), "w") as w:
+        w.write("<html>\n<body>\n")
+        for i in range(len(img_urls)):
+            w.write("<img src='img{}.jpg' />".format(i))
+        w.write("</body>\n</html>")
 
 def create_parser():
     """Create an argument parser object"""
@@ -51,7 +72,6 @@ def create_parser():
     parser.add_argument('logfile', help='apache logfile to extract urls from')
 
     return parser
-
 
 def main(args):
     """Parse args, scan for urls, get images from urls"""
