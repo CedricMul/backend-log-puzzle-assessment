@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """
 Logpuzzle exercise
 
@@ -19,7 +19,7 @@ Here's what a puzzle url looks like:
 import os
 import re
 import sys
-import urllib
+import urllib.request as urllib
 import argparse
 
 
@@ -35,11 +35,11 @@ def read_urls(filename):
             get_string = re.search(lit, l)
             if get_string:
                 g_string = get_string.group(1)
-                url_string = filename + g_string
+                f_name = filename[filename.index('_') + 1:]
+                url_string = f_name + g_string
                 if url_string not in url_list:
                     url_list.append(url_string)
-        f.close()
-    url_list = sorted(url_list)
+    url_list = sorted(url_list, key=lambda u: u[-8:])
     return url_list
 
 
@@ -52,21 +52,17 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    if os.path.isdir(dest_dir):
-        os.chdir(dest_dir)
-    else:
+    if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
-        os.chdir(dest_dir)
-    i = 0
-    for url in img_urls:
-        urllib.urlretrieve(url, "img" + str(i))
-        i += 1
-    with open("index.html", "w+") as w:
+    for i, url in enumerate(img_urls):
+        url = "http://" + url
+        print(url)
+        dest = os.path.join(dest_dir, "img" + str(i) + ".jpg")
+        urllib.urlretrieve(url, dest)
+    with open(os.path.join(dest_dir, "index.html"), "w") as w:
         w.write("<html>\n<body>\n")
-        x = 0
-        for i in img_urls:
-            w.write("<img src={}".format(dest_dir
-                + "/" + "img" + str(x) + ">"))
+        for i in range(len(img_urls)):
+            w.write("<img src='img{}.jpg' />".format(i))
         w.write("</body>\n</html>")
 
 def create_parser():
@@ -97,6 +93,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-
-read_urls('animal_code.google.com')
